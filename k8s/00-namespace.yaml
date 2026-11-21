@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-app
+  labels:
+    project: k8s-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app-monitoring
+  labels:
+    project: k8s-platform
+
+

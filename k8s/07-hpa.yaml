@@ -1,0 +1,32 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: task-api
+  namespace: task-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: task-api
+  minReplicas: 3  # never go below 3
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: 
+          type: Utilization
+          averageUtilization: 50   # aim for 50% of the CPU request (50m of 100m)
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0     # scale up right away
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 60    # wait 60s of low load before scaling down (default is 300)
+      policies:
+        - type: Pods
+          value: 1                      # remove at most 1 pod every 30s
+          periodSeconds: 30

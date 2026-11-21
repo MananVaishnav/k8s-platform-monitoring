@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: task-api-pdb
+  namespace: task-app
+spec:
+  minAvailable: 2  # during voluntary disruptions, keep at least 2 pods running
+  selector:
+    matchLabels:
+      app: task-api

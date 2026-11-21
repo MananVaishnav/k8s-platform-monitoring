@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-api
+  namespace: task-app
+  labels:
+    app: task-api
+  annotations:
+    kubernetes.io/change-cause: "v2 - new version"
+spec:
+  revisionHistoryLimit: 5
+  minReadySeconds: 5
+  progressDeadlineSeconds: 120
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: task-api
+  template:
+    metadata:
+      labels:
+        app: task-api
+    spec:
+      terminationGracePeriodSeconds: 30     # time allowed for a clean shutdown before force kill
+      topologySpreadConstraints:
+        - maxSkew: 1  # Difference in Pod count between eligible nodes should not exceed 1
+          topologyKey: kubernetes.io/hostname  # spread across nodes (use topology.kubernetes.io/zone for zones)
+          whenUnsatisfiable: DoNotSchedule  # stay pending rather then break it
+          nodeTaintsPolicy: Honor  # ignore cordoned/tainted nodes when counting
+          labelSelector:
+            matchLabels:
+              app: task-api
+          matchLabelKeys:  # count only pods from the same ReplicaSet
+            - pod-template-hash
+      containers:
+        - name: task-api
+          image: httpsmv/task-api:v2
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: task-api-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: task-api-secret
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: 100m  # 100m = 0.1 CPU core
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          startupProbe:  # allows up to 30s (15 x 2s) to start
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 15
+          livenessProbe:  # restart if /healthz fails 3 times in a row
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:  # stop sending traffic if /readyz fails twice
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
+          volumeMounts:
+            - name: config-files
+              mountPath: /etc/task-api
+              readOnly: true
+      volumes:
+        - name: config-files
+          configMap:
+            name: task-api-files

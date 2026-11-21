@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-api-config
+  namespace: task-app
+data:
+  DB_NAME: "tasks"
+  DB_USER: "taskuser"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-api-files
+  namespace: task-app
+data:
+  settings.ini: |
+    [app]
+    environment = dev
+    max_tasks = 100
+
