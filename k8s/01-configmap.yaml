@@ -4,6 +4,7 @@ metadata:
   name: task-api-config
   namespace: task-app
 data:
+  DB_HOST: "postgres-0.postgres"
   DB_NAME: "tasks"
   DB_USER: "taskuser"
 ---

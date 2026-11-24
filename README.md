@@ -14,6 +14,7 @@ A hands-on Kubernetes project: a Python **Task API** running on a 3-node Minikub
 | High availability | Topology spread across nodes; PodDisruptionBudget (`minAvailable: 2`) | `k8s/03-deployment.yaml`, `k8s/06-pdb.yaml` |
 | Networking | ClusterIP Service (internal) and NodePort Service (external, port 30080) | `k8s/04-service.yaml`, `k8s/05-service-nodeport.yaml` |
 | Autoscaling | HPA on CPU (3 to 8 pods) with tuned scale-up/scale-down behavior | `k8s/07-hpa.yaml` |
+| Database | PostgreSQL StatefulSet with a headless Service, one PVC per pod, pinned with node affinity | `k8s/08-postgres.yaml` |
 | Container | Slim Python image, non-root user, Prometheus `/metrics` endpoint | `app/Dockerfile` |
 
 ## Repository structure
@@ -65,7 +66,7 @@ docker push <your-dockerhub-user>/task-api:v2
 - [x] Probes, resource limits, graceful shutdown
 - [x] High availability (topology spread, PDB)
 - [x] Horizontal Pod Autoscaler
-- [ ] PostgreSQL StatefulSet with persistent storage
+- [x] PostgreSQL StatefulSet with persistent storage
 - [ ] Ingress and NetworkPolicies
 - [ ] RBAC and pod security
 - [ ] Jobs, CronJobs, DaemonSets
